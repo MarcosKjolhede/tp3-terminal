@@ -40,6 +40,10 @@ public class Servicio {
         return pasajeVendido.size() >= cantidadDeAsientos;
     }
 
+    public estaOcupado(int numeroAsiento){
+        return pasajeVendido.containsKey(numeroAsiento);
+    }
+    
     public int obtenerAsientoLibreMasBajo() {
         for (int i = 1; i <= cantidadDeAsientos; i++) {
             if (!pasajeVendido.containsKey(i)) {
@@ -58,6 +62,7 @@ public class Servicio {
         pasajeVendido.put(numeroAsiento, nuevoPasaje);
         return true;
     }
+    
     public boolean agregarAEnEspera(Pasajero pasajero) {
         return listaEspera.agregar(pasajero);
     }
