@@ -1,6 +1,5 @@
 package modelo;
 import java.util.LinkedList;
-import java.util.NoSuchElementException;
 import java.util.Queue;
 
 public class ListaDeEspera<T> {
@@ -19,12 +18,8 @@ public class ListaDeEspera<T> {
         return elementos.offer(elemento);
     }
 
-    // Entrega el siguiente sin devolver null (manda excepción si está vacía)
     public T siguiente() {
-        if (estaVacia()) {
-            throw new NoSuchElementException("La lista de espera está vacía.");
-        }
-        return elementos.poll();
+        return elementos.remove(); 
     }
 
     public boolean estaVacia() {
@@ -47,4 +42,3 @@ public class ListaDeEspera<T> {
         }
     }
 }
-
