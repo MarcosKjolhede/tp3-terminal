@@ -40,7 +40,7 @@ public class Servicio {
         return pasajeVendido.size() >= cantidadDeAsientos;
     }
 
-    public estaOcupado(int numeroAsiento){
+    public boolean estaOcupado(int numeroAsiento){
         return pasajeVendido.containsKey(numeroAsiento);
     }
     
