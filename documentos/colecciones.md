@@ -1,0 +1,6 @@
+# Justificacion de Seleccion de Colecciones (TP3 - Punto B.1)
+
+* Los servicios, buscados por su codigo * | Map<String, Servicio> | HashMap<String, Servicio> | Declaramos con la interfaz 'Map' por una buena practica y lo instanciamos con 'HashMap' porque nos permite buscar un servicio al instante usando su codigo como clave, sin tener que andar recorriendo una lista.|
+* Los pasajes de un servicio, por numero de asiento * | Map<Integer, Pasaje> | HashMap<Integer, Pasaje> | Usamos el numero de asiento como clave para acceder directamente al pasaje. Declaramos la variable como 'Map' para independizar el codigo; asi, si el dia de maniana queremos cambiar a un 'TreeMap' para tenerlos ordenados por asiento, solo cambiamos el 'new' sin romper nada. |
+* La lista de espera de un servicio * | ListaDeEspera<Pasajero> | Usamos la clase generica 'ListaDeEspera' que armamos para el TP. Al ser una cola(el primero en llegar es el primero en recibir el pasaje), nos asegura respetar el orden de la lista de espera con el limite de 5 personas.| 
+* Lo recaudado por cada empresa * | Map<String, Double> | HashMap<String, Double> | Usamos un mapa donde la clave es el nombre de la empresa y el valor es el total acumulado. Nos permite ir sumando lo que recauda cada empresa a medida que recorremos los servicios. |
