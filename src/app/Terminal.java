@@ -1,6 +1,5 @@
 package app;
 import java.util.*;
-
 import modelo.*;
 
 public class Terminal {
@@ -87,7 +86,7 @@ public class Terminal {
     }
 
     public Optional<Reclamo> atenderSiguienteReclamo(){
-        return listaDeEsperaReclamos.siguiente();
+        return Optional.ofNullable(listaDeEsperaReclamos.siguiente());
     }
 
     public Servicio getServicio(String codigo){
