@@ -38,8 +38,11 @@ public class Servicio {
     public double getPrecio(){
         return precio;
     }
-    public int getCantifadDeAsientos(){
+    public int getCantidadDeAsientos(){
         return cantidadDeAsientos;
+    }
+    public int getCantidadDeAsientosLibres(){
+        return cantidadDeAsientos - pasajeVendido.size();
     }
 
     public boolean estaLleno(){
