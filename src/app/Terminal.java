@@ -29,7 +29,7 @@ public class Terminal {
             try{
                 int numeroAsiento = Integer.parseInt(asiento);
                 //vamos a validar si el asiento esta fuera de rango
-                if(numeroAsiento < 1 || numeroAsiento >servicio.getCantifadDeAsientos() ){
+                if(numeroAsiento < 1 || numeroAsiento >servicio.getCantidadDeAsientos() ){
                     throw new VentaRechazadaException("El asiento" + numeroAsiento + "esta fuera de rango.");
                 }
 //                    System.out.println("Rechazado: Numero de asiento fuera de rango" + numeroAsiento);
@@ -63,7 +63,7 @@ public class Terminal {
     public Map<String, Double> calcularRecaudacionPorEmpresa(Map<String, Servicio> servicios){
         Map<String, Double> recaudacion = new HashMap<>();
         for(Servicio s : servicios.values()){
-            double totalServicio = s.getPrecio() * s.getCantifadDeAsientos();
+            double totalServicio = s.getPrecio() * s.getCantidadDeAsientos();
             recaudacion.put(s.getEmpresa(), recaudacion.getOrDefault(s.getEmpresa(), 0.0) + totalServicio);
         }
         return recaudacion;
@@ -75,6 +75,14 @@ public class Terminal {
 
     public Optional<Reclamo> atenderSiguienteReclamo(ListaDeEspera<Reclamo> listaDeEsperaReclamos){
         return Optional.ofNullable(listaDeEsperaReclamos.siguiente());
+    }
+
+    public static void mostrarServicios(Map<String, Servicio> servicios){
+        System.out.println("------------------------------------------------------------");
+        for(Servicio servicio: servicios.values()){
+            System.out.println("Servicio codigo " + servicio.getCodigo() + ". " + servicio.getEmpresa() + ". Destino: " + servicio.getDestino() + ". Horario: " + servicio.getHoraDeSalida() + ". Asientos disponibles: " + servicio.getCantidadDeAsientosLibres() + ". Precio: " + servicio.getPrecio());
+            System.out.println("------------------------------------------------------------");
+        }
     }
 
     public static void agregarServicio(Map<String, Servicio> servicios, Scanner teclado){
@@ -112,6 +120,7 @@ public class Terminal {
                     agregarServicio(servicios, teclado);
                     break;
                 case "#":
+                    mostrarServicios(servicios);
                     break;
             }
         }
