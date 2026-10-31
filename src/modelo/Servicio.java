@@ -29,6 +29,12 @@ public class Servicio {
     public String getEmpresa(){
         return empresa;
     }
+    public String getDestino() {
+        return destino;
+    }
+    public String getHoraDeSalida() {
+        return horaDeSalida;
+    }
     public double getPrecio(){
         return precio;
     }
