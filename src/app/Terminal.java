@@ -4,6 +4,23 @@ import modelo.*;
 
 public class Terminal {
 
+    public static void limpiarConsola() {
+        try {
+            // Para Windows
+            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                // Para sistemas basados en Unix/Linux/macOS
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (Exception e) {
+            // Como alternativa si falla lo anterior, imprime múltiples saltos de línea
+            for (int i = 0; i < 50; i++) {
+                System.out.println();
+            }
+        }
+    }
     public boolean venderPasaje(Map<String, Servicio> servicios, String codigoServicio, Pasajero pasajero, String asiento) throws ServicioInexistenteException, VentaRechazadaException {
         Servicio servicio = servicios.get(codigoServicio);
         if(servicio == null) {
@@ -118,6 +135,7 @@ public class Terminal {
             switch(accion){
                 case "@":
                     agregarServicio(servicios, teclado);
+                    limpiarConsola();
                     break;
                 case "#":
                     mostrarServicios(servicios);
