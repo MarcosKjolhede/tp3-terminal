@@ -10,40 +10,40 @@ public class ListaDeEspera<T> {
     private final int capacidadMaxima;
 
     public ListaDeEspera(int capacidadMaxima) {
-        if(capacidadMaxima <=0 ){
+        if (capacidadMaxima <= 0) {
             throw new IllegalArgumentException("La capacidad máxima debe ser mayor que 0.");
         }
         this.capacidadMaxima = capacidadMaxima;
     }
 
+    //Agrega al final. Devuelve false si no pudo porque está llena
     public boolean agregar(T elemento) {
-        if (elementos.size() >= capacidadMaxima) {
+        if (estaLlena()) {
             return false;
         }
-        return elementos.offer(elemento);
+        elementos.add(elemento);
+        return true;
     }
 
-    public T siguiente() {
-        return elementos.remove(); 
+    //Entrega y saca el primero. Si está vacía devuelve Optional.empty(), nunca null
+    public Optional<T> siguiente() {
+        return Optional.ofNullable(elementos.poll());
     }
 
     public boolean estaVacia() {
         return elementos.isEmpty();
     }
 
+    public boolean estaLlena() {
+        return elementos.size() >= capacidadMaxima;
+    }
+
     public int cantidad() {
         return elementos.size();
     }
 
-    public void imprimirLista() {
-        if (estaVacia()) {
-            System.out.println("  (Vacía)");
-            return;
-        }
-        int pos = 1;
-        for (T elem : elementos) {
-            System.out.println("  " + pos + ". " + elem);
-            pos++;
-        }
+    // Copia en orden de llegada, para informes (no expone la cola interna)
+    public List<T> comoLista() {
+        return new ArrayList<>(elementos);
     }
 }
