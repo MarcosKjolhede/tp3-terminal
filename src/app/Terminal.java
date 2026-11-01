@@ -1,168 +1,202 @@
 package app;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.*;
-import modelo.*;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.TreeMap;
+
+import modelo.ListaDeEspera;
+import modelo.Pasaje;
+import modelo.Pasajero;
+import modelo.Reclamo;
+import modelo.RenglonInvalidoException;
+import modelo.Servicio;
+import modelo.ServicioInexistenteException;
+import modelo.VentaRechazadaException;
 
 public class Terminal {
 
-    // public static void limpiarConsola() {
-    //     try {
-    //         // Para Windows
-    //         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-    //             new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-    //         } else {
-    //             // Para sistemas basados en Unix/Linux/macOS
-    //             System.out.print("\033[H\033[2J");
-    //             System.out.flush();
-    //         }
-    //     } catch (Exception e) {
-    //         // Como alternativa si falla lo anterior, imprime múltiples saltos de línea
-    //         for (int i = 0; i < 50; i++) {
-    //             System.out.println();
-    //         }
-    //     }
-    // }
-    try (BufferedReader lector = new BufferedReader(new FileReader("ventas.txt"))){
-        String renglon;
-        while((renglon = lector.readLine()) != null){
+    public enum ResultadoVenta { VENDIDO, EN_ESPERA }
 
-        } 
-    } catch (FileNotFoundException e){
+    private static final int MAX_RECLAMOS = 10;
 
+    // LinkedHashMap: busqueda por código en O(1) y mantiene el orden de carga
+    private final Map<String, Servicio> servicios = new LinkedHashMap<>();
+    // Segundo uso real de ListaDeEspera<T>: reclamos pendientes de atencion
+    private final ListaDeEspera<Reclamo> reclamos = new ListaDeEspera<>(MAX_RECLAMOS);
+
+    // servicios
+
+    public void agregarServicio(Servicio servicio) {
+        if (servicios.putIfAbsent(servicio.getCodigo(), servicio) != null) {
+            throw new IllegalArgumentException("Ya existe un servicio con código " + servicio.getCodigo());
         }
     }
-    public boolean venderPasaje(Map<String, Servicio> servicios, String codigoServicio, Pasajero pasajero, String asiento) throws ServicioInexistenteException, VentaRechazadaException {
-        Servicio servicio = servicios.get(codigoServicio);
-        if(servicio == null) {
-            throw new ServicioInexistenteException(codigoServicio);
-        }
-//            System.out.println("Rechazado: El servicio " + codigoServicio + " no existe");
-//            return false;
-//        }
 
-        //Manejar el asiento "*" o con numero
-        if(asiento.equals("*")){
-            if(servicio.estaLleno()){
-                servicio.agregarAEnEspera(pasajero);
-                return false;
-            } else {
-                int asientoLibre = servicio.obtenerAsientoLibreMasBajo();
-                servicio.venderAsiento(pasajero, asientoLibre);
-                return true;
-            }
-        } else {
-            //si no es "*", intentamos pasarlo a numero
-            //si el usuario mete una palabra Integer.parseInt manda error numberformatexeption
-            try{
-                int numeroAsiento = Integer.parseInt(asiento);
-                //vamos a validar si el asiento esta fuera de rango
-                if(numeroAsiento < 1 || numeroAsiento >servicio.getCantidadDeAsientos() ){
-                    throw new VentaRechazadaException("El asiento" + numeroAsiento + "esta fuera de rango.");
-                }
-//                    System.out.println("Rechazado: Numero de asiento fuera de rango" + numeroAsiento);
-//                    return false;
-//                }
-                //Validar si el asiento esta ocupado
-                if(servicio.estaOcupado(numeroAsiento)){
-                    throw new VentaRechazadaException("El asiento "+ numeroAsiento + "ya esta ocupado.");
-                }
-//                    System.out.println("Rechazado: El asiento " + numeroAsiento + " ya esta vendido");
-//                    return false;
-//                }
-                servicio.venderAsiento(pasajero, numeroAsiento);
-                return true;
-            }catch (NumberFormatException e){
-                throw new VentaRechazadaException("El asiento" + asiento + "no es un numero valido ni '*'.");
-            }
-//                System.out.println("Rechazado: El asiento '" + asiento + "' no es un número válido ni '*'");
-//                return false;
-//            }
+    private Servicio obtenerServicio(String codigo) throws ServicioInexistenteException {
+        Servicio servicio = servicios.get(codigo);
+        if (servicio == null) {
+            throw new ServicioInexistenteException(codigo);
         }
+        return servicio;
     }
-    public Optional<Pasaje> buscarPasaje(Map<String, Servicio> servicios, String dni, String codigoServicio) {
+
+    // ventas
+
+    /*
+     Vende un pasaje. 'asiento' es un número o "*" (cualquier asiento libre)
+     Con "*" y servicio lleno, el pasajero pasa a la espera
+     */
+    public ResultadoVenta venderPasaje(String codigoServicio, Pasajero pasajero, String asiento)
+            throws ServicioInexistenteException {
+        Servicio servicio = obtenerServicio(codigoServicio);
+        String pedido = asiento.trim();
+
+        if (pedido.equals("*")) {
+            OptionalInt libre = servicio.obtenerAsientoLibreMasBajo();
+            if (libre.isPresent()) {
+                servicio.venderAsiento(pasajero, libre.getAsInt());
+                return ResultadoVenta.VENDIDO;
+            }
+            if (!servicio.agregarAEnEspera(pasajero)) {
+                throw new VentaRechazadaException("El servicio " + codigoServicio + " está lleno y su lista de espera también.");
+            }
+            return ResultadoVenta.EN_ESPERA;
+        }
+
+        int numeroAsiento;
+        try {
+            numeroAsiento = Integer.parseInt(pedido);
+        } catch (NumberFormatException e) {
+            throw new VentaRechazadaException("El asiento '" + pedido + "' no es un número válido ni '*'.", e);
+        }
+        servicio.venderAsiento(pasajero, numeroAsiento);
+        return ResultadoVenta.VENDIDO;
+    }
+
+    //Devuelve el pasaje de un asiento; Optional con quién de la espera se lo queda
+    public Optional<Pasajero> devolverPasaje(String codigoServicio, int numeroAsiento)
+            throws ServicioInexistenteException {
+        return obtenerServicio(codigoServicio).devolverPasaje(numeroAsiento);
+    }
+
+    //Nunca devuelve null: si no hay pasaje (o no existe el servicio) devuelve Optional.empty()
+    public Optional<Pasaje> buscarPasaje(String dni, String codigoServicio) {
         Servicio servicio = servicios.get(codigoServicio);
         if (servicio == null) {
             return Optional.empty();
         }
-        return servicio.buscarPasajePorDni(dni);
+        return servicio.buscarPasajePorDni(dni.trim());
     }
-    //recaudacion por empresa
-    public Map<String, Double> calcularRecaudacionPorEmpresa(Map<String, Servicio> servicios){
-        Map<String, Double> recaudacion = new HashMap<>();
-        for(Servicio s : servicios.values()){
-            double totalServicio = s.getPrecio() * s.getCantidadDeAsientos();
-            recaudacion.put(s.getEmpresa(), recaudacion.getOrDefault(s.getEmpresa(), 0.0) + totalServicio);
+
+    // archivo
+
+    public void procesarArchivo(String ruta) {
+        int leidos = 0;
+        int ventas = 0;
+        int enEspera = 0;
+        int rechazados = 0;
+
+        try (BufferedReader lector = new BufferedReader(new FileReader(ruta))) {
+            String renglon;
+            while ((renglon = lector.readLine()) != null) {
+                leidos++;
+                try {
+                    ResultadoVenta resultado = procesarRenglon(renglon);
+                    if (resultado == ResultadoVenta.VENDIDO) {
+                        ventas++;
+                    } else {
+                        enEspera++;
+                        System.out.println("Renglon " + leidos + ": quedó en lista de espera.");
+                    }
+                } catch (ServicioInexistenteException | RenglonInvalidoException | VentaRechazadaException e) {
+                    rechazados++;
+                    System.out.println("Renglón " + leidos + " rechazado: " + e.getMessage());
+                }
+            }
+            System.out.println("Resumen de " + ruta + ": " + leidos + " renglones leidos, " + ventas + " ventas, " + enEspera + " en espera, " + rechazados + " rechazados.");
+        } catch (FileNotFoundException e) {
+            System.out.println("No se encontró el archivo '" + ruta + "'.");
+        } catch (IOException e) {
+            System.out.println("Error leyendo '" + ruta + "': " + e.getMessage());
+        }
+    }
+
+    private ResultadoVenta procesarRenglon(String renglon)
+            throws ServicioInexistenteException, RenglonInvalidoException {
+        String[] campos = renglon.split(";", -1);
+        if (campos.length != 4) {
+            throw new RenglonInvalidoException(renglon, campos.length);
+        }
+        String codigo = campos[0].trim();
+        Pasajero pasajero = new Pasajero(campos[1], campos[2]);
+        String asiento = campos[3];
+        return venderPasaje(codigo, pasajero, asiento);
+    }
+
+    // informes
+
+    public void imprimirInformePasajeros(String codigoServicio) throws ServicioInexistenteException {
+        Servicio s = obtenerServicio(codigoServicio);
+        System.out.println("Servicio " + s.getCodigo() + " (" + s.getEmpresa() + " -> " + s.getDestino() + ")");
+        System.out.println(" Pasajeros por asiento:");
+        if (s.getPasajes().isEmpty()) {
+            System.out.println("  (ninguno)");
+        }
+        for (Pasaje p : s.getPasajes()) {
+            System.out.println("  " + p);
+        }
+        List<Pasajero> espera = s.getEnEspera();
+        System.out.println(" En espera (" + espera.size() + "):");
+        if (espera.isEmpty()) {
+            System.out.println("  (ninguno)");
+        }
+        int pos = 1;
+        for (Pasajero p : espera) {
+            System.out.println("  " + pos++ + ". " + p);
+        }
+    }
+
+    public Map<String, Double> calcularRecaudacionPorEmpresa(){
+        // TreeMap: empresas ordenadas alfabeticamente en el informe.
+        Map<String, Double> recaudacion = new TreeMap<>();
+        for (Servicio s : servicios.values()) {
+            recaudacion.merge(s.getEmpresa(), s.getRecaudacion(), Double::sum);
         }
         return recaudacion;
     }
 
-    public boolean registrarReclamo(ListaDeEspera<Reclamo> listaDeEsperaReclamos, Reclamo reclamo){
-        return listaDeEsperaReclamos.agregar(reclamo);
-    }
-
-    public Optional<Reclamo> atenderSiguienteReclamo(ListaDeEspera<Reclamo> listaDeEsperaReclamos){
-        return Optional.ofNullable(listaDeEsperaReclamos.siguiente());
-    }
-
-    public static void mostrarServicios(Map<String, Servicio> servicios){
-        System.out.println("------------------------------------------------------------");
-        for(Servicio servicio: servicios.values()){
-            System.out.println("Servicio codigo " + servicio.getCodigo() + ". " + servicio.getEmpresa() + ". Destino: " + servicio.getDestino() + ". Horario: " + servicio.getHoraDeSalida() + ". Asientos disponibles: " + servicio.getCantidadDeAsientosLibres() + ". Precio: " + servicio.getPrecio());
-            System.out.println("------------------------------------------------------------");
+    public void imprimirRecaudacionPorEmpresa(){
+        System.out.println("Recaudación por empresa:");
+        for (Map.Entry<String, Double> e : calcularRecaudacionPorEmpresa().entrySet()) {
+            System.out.printf("  %s: $%,.0f%n", e.getKey(), e.getValue());
         }
     }
 
-    public static void agregarServicio(Map<String, Servicio> servicios, Scanner teclado){
-        System.out.println("Ingrese el codigo del servicio: ");
-        String codigo = teclado.nextLine();
-        System.out.println("Ingrese la empresa que ofrece el servicio: ");
-        String empresa = teclado.nextLine();
-        System.out.println("Ingrese el destino del servicio: ");
-        String destino = teclado.nextLine();
-        System.out.println("Ingrese la hora de salida del servicio: ");
-        String horaDeSalida = teclado.nextLine();
-        System.out.println("Ingrese la cantidad de asientos del servicio");
-        int cantidadDeAsientos = teclado.nextInt();
-        teclado.nextLine();
-        System.out.println("Ingrese el costo del servicio: ");
-        double precio = teclado.nextDouble();
-        teclado.nextLine();
-        Servicio servicio = new Servicio(codigo, empresa, destino, horaDeSalida, cantidadDeAsientos, precio);
-        servicios.put(servicio.getCodigo(), servicio);
-    }
-
-    public static void interfazPrincipal(Map<String, Servicio> servicios, Scanner teclado, ListaDeEspera<Reclamo> listaDeEsperaReclamos){
-        String accion = "";
-        while (!accion.equalsIgnoreCase("!")){
-            System.out.println("------------------------------------------------------------");
-            System.out.println("Seleccione la accion que desea realizar: ");
-            System.out.println("(Escriba el simbolo que se encuentra delante sin las comillas)");
-            System.out.println("'@' Para agregar un servicio");
-            System.out.println("'#' Para mostrar todos los servicios");
-            System.out.println("'!' Para detener la ejecucion del programa");
-            System.out.println("------------------------------------------------------------");
-            accion = teclado.nextLine();
-            switch(accion){
-                case "@":
-                    agregarServicio(servicios, teclado);
-                    limpiarConsola();
-                    break;
-                case "#":
-                    mostrarServicios(servicios);
-                    break;
-            }
+    public void imprimirServicios() {
+        for (Servicio s : servicios.values()) {
+            System.out.println("Servicio " + s.getCodigo() + ". " + s.getEmpresa() + ". Destino: " + s.getDestino() + ". Salida: " + s.getHoraDeSalida() + ". Asientos libres: " + s.getCantidadDeAsientosLibres() + ". Precio: " + s.getPrecio());
         }
     }
 
-    public static void main(String[] args){
-        Map<String, Servicio> servicios = new HashMap<>();
-        ListaDeEspera<Reclamo> listaDeEsperaReclamos = new ListaDeEspera<>(10);
+    public List<String> getCodigosDeServicios() {
+        return List.copyOf(servicios.keySet());
+    }
 
-        Scanner teclado = new Scanner(System.in);
+    //reclmos
 
-        interfazPrincipal(servicios, teclado, listaDeEsperaReclamos);
+    //Devuelve false si la lista de reclamos está llena
+    public boolean registrarReclamo(Reclamo reclamo) {
+        return reclamos.agregar(reclamo);
+    }
+
+    public Optional<Reclamo> atenderSiguienteReclamo() {
+        return reclamos.siguiente();
     }
 }
-
