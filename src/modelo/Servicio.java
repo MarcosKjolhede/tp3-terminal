@@ -89,16 +89,18 @@ public class Servicio {
         return espera.agregar(pasajero);
     }
 
-    public Pasajero devolverPasaje(int numeroAsiento) {
-        Pasaje devuelto = pasajesVendidos.remove(numeroAsiento);
-        if (devuelto == null) return null;
-
-        if (!espera.estaVacia()) {
-            Pasajero enEspera = espera.siguiente();
-            pasajesVendidos.put(numeroAsiento, new Pasaje(enEspera, this, numeroAsiento));
-            return enEspera;
+     /*
+    Devuelve el pasaje del asiento. Si hay alguien en espera, 
+    se queda con ese asiento y se lo devuelve; si no, Optional.empty().
+    Si el asiento no estaba vendido, lanza IllegalArgumentException.
+     */
+    public Optional<Pasajero> devolverPasaje(int numeroAsiento) {
+        if (pasajesVendidos.remove(numeroAsiento) == null) {
+            throw new IllegalArgumentException("El asiento " + numeroAsiento + " del servicio " + codigo + " no está vendido.");
         }
-        return null;
+        Optional<Pasajero> siguiente = espera.siguiente();
+        siguiente.ifPresent(p -> pasajesVendidos.put(numeroAsiento, new Pasaje(p, this, numeroAsiento)));
+        return siguiente;        
     }
 
     public Optional<Pasaje> buscarPasajePorDni(String dni) {
@@ -110,18 +112,14 @@ public class Servicio {
         return Optional.empty();
     }
 
-    public void imprimirPasajerosYEspera() {
-        System.out.println("Servicio " + codigo + " (" + empresa + " -> " + destino + ")");
-        System.out.println(" Pasajes vendidos:");
-        for (int i = 1; i <= cantidadDeAsientos; i++) {
-            if (pasajesVendidos.containsKey(i)) {
-                System.out.println("  " + pasajesVendidos.get(i));
-            } else {
-                System.out.println("  Asiento " + i + ": [LIBRE]");
-            }
-        }
-        System.out.println(" En lista de espera (" + espera.cantidad() + "):");
-        espera.imprimirLista();
+    // Pasajes ordenados por número de asiento (solo lectura)
+    public Collection<Pasaje> getPasajes() {
+        return Collections.unmodifiableCollection(pasajesVendidos.values());
+    }
+
+    // Pasajeros en espera, en orden de llegada (copia)
+    public List<Pasajero> getEnEspera() {
+        return espera.comoLista();
     }
 }
     

@@ -1,14 +1,19 @@
 package modelo;
-import java.util.LinkedList;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 
 public class ListaDeEspera<T> {
-    private Queue<T> elementos;
-    private int capacidadMaxima;
+    private final Queue<T> elementos = new ArrayDeque<>();
+    private final int capacidadMaxima;
 
     public ListaDeEspera(int capacidadMaxima) {
+        if(capacidadMaxima <=0 ){
+            throw new IllegalArgumentException("La capacidad máxima debe ser mayor que 0.");
+        }
         this.capacidadMaxima = capacidadMaxima;
-        this.elementos = new LinkedList<>();
     }
 
     public boolean agregar(T elemento) {
