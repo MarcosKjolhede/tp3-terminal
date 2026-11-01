@@ -1,9 +1,9 @@
 package modelo;
 
 public class Reclamo {
-    private String idReclamo;
-    private Pasajero pasajero;
-    private String motivo;
+    private final String idReclamo;
+    private final Pasajero pasajero;
+    private final String motivo;
 
     public Reclamo(String idReclamo, Pasajero pasajero, String motivo){
         this.idReclamo = idReclamo;
@@ -25,6 +25,6 @@ public class Reclamo {
 
     @Override
     public String toString(){
-        return "Reclamo " + idReclamo + "[" + pasajero.getNombre() + "]" + motivo;
+        return "Reclamo " + idReclamo + " [" + pasajero.getNombre() + "]" + motivo;
     }
 }
