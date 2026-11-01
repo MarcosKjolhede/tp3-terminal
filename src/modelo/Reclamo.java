@@ -25,6 +25,6 @@ public class Reclamo {
 
     @Override
     public String toString(){
-        return "Reclamo " + idReclamo + " [" + pasajero.getNombre() + "]" + motivo;
+        return "Reclamo " + idReclamo + " [" + pasajero.getNombre() + "] " + motivo;
     }
 }

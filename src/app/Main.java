@@ -4,76 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
-import app.Terminal.ResultadoVenta;
-import modelo.Pasaje;
-import modelo.Pasajero;
-import modelo.Reclamo;
-import modelo.Servicio;
-import modelo.ServicioInexistenteException;
-import modelo.VentaRechazadaException;
+import modelo.*;
 
 public class Main {
 
     private static final int ANCHO = 64;
     private static int proximoReclamo = 1;
-
-    public static void main(String[] args) {
-        Terminal terminal = new Terminal();
-        try (Scanner teclado = new Scanner(System.in)) {
-            String opcion = "";
-            while (!opcion.equals("0")) {
-                mostrarMenu();
-                if (!teclado.hasNextLine()) {
-                    break;
-                }
-                opcion = teclado.nextLine().trim();
-                System.out.println();
-                switch (opcion) {
-                    case "1": 
-                        agregarServicio(terminal, teclado); 
-                    break;
-                    case "2": 
-                        cargarServiciosDelTP(terminal); 
-                    break;
-                    case "3": 
-                        mostrarServicios(terminal); 
-                    break;
-                    case "4": 
-                        procesarArchivo(terminal, teclado);
-                    break;
-                    case "5": 
-                        venderPasaje(terminal, teclado); 
-                    break;
-                    case "6": 
-                        devolverPasaje(terminal, teclado); 
-                    break;
-                    case "7": 
-                    buscarPasaje(terminal, teclado); 
-                        break;
-                    case "8": 
-                        informePasajeros(terminal, teclado);
-                    break;
-                    case "9":
-                        informeRecaudacion(terminal); 
-                    break;
-                    case "10": 
-                        registrarReclamo(terminal, teclado); 
-                    break;
-                    case "11": 
-                        atenderReclamo(terminal); 
-                    break;
-                    case "12": 
-                        demostracion(terminal); 
-                    break;
-                    case "0":
-                    break;
-                    default: System.out.println("Opcion invalida: '" + opcion + "'");
-                }
-            }
-        }
-        System.out.println();
-        System.out.println("Programa finalizado.");
-    }
 
     // menú
 
@@ -148,7 +84,7 @@ public class Main {
 
     private static void procesarArchivo(Terminal terminal, Scanner teclado) {
         titulo("PROCESAR ARCHIVO DE VENTAS");
-        String ruta = leerTextoNoVacio(teclado, "Ruta del archivo (ej. ventas.txt): ");
+        String ruta = leerTextoNoVacio(teclado, "Ruta del archivo (ej. documentos\\ventas.txt): ");
         System.out.println(linea('-'));
         terminal.procesarArchivo(ruta);
     }
@@ -363,6 +299,71 @@ public class Main {
     private static String centrar(String texto) {
         int espacios = Math.max(0, (ANCHO - texto.length()) / 2);
         return " ".repeat(espacios) + texto;
+    }
+
+    public static void main(String[] args) {
+        Terminal terminal = new Terminal();
+
+        // Carga de los servicios del dia
+        cargarServicio(terminal, new Servicio("NEC-MDP-0700", "Costera", "Mar del Plata", "07:00", 4, 12000));
+        cargarServicio(terminal, new Servicio("NEC-BA-2200", "Atlántica", "Buenos Aires", "22:00", 6, 38000));
+        cargarServicio(terminal, new Servicio("NEC-TAN-0930", "Costera", "Tandil", "09:30", 3, 9500));
+        cargarServicio(terminal, new Servicio("NEC-TRA-1400", "Atlántica", "Tres Arroyos", "14:00", 5, 21000));
+
+        try (Scanner teclado = new Scanner(System.in)) {
+            String opcion = "";
+            while (!opcion.equals("0")) {
+                mostrarMenu();
+                if (!teclado.hasNextLine()) {
+                    break;
+                }
+                opcion = teclado.nextLine().trim();
+                System.out.println();
+                switch (opcion) {
+                    case "1":
+                        agregarServicio(terminal, teclado);
+                        break;
+                    case "2":
+                        cargarServiciosDelTP(terminal);
+                        break;
+                    case "3":
+                        mostrarServicios(terminal);
+                        break;
+                    case "4":
+                        procesarArchivo(terminal, teclado);
+                        break;
+                    case "5":
+                        venderPasaje(terminal, teclado);
+                        break;
+                    case "6":
+                        devolverPasaje(terminal, teclado);
+                        break;
+                    case "7":
+                        buscarPasaje(terminal, teclado);
+                        break;
+                    case "8":
+                        informePasajeros(terminal, teclado);
+                        break;
+                    case "9":
+                        informeRecaudacion(terminal);
+                        break;
+                    case "10":
+                        registrarReclamo(terminal, teclado);
+                        break;
+                    case "11":
+                        atenderReclamo(terminal);
+                        break;
+                    case "12":
+                        demostracion(terminal);
+                        break;
+                    case "0":
+                        break;
+                    default: System.out.println("Opcion invalida: '" + opcion + "'");
+                }
+            }
+        }
+        System.out.println();
+        System.out.println("Programa finalizado.");
     }
 }
 

@@ -1,4 +1,4 @@
-package app;
+package modelo;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -10,15 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.TreeMap;
-
-import modelo.ListaDeEspera;
-import modelo.Pasaje;
-import modelo.Pasajero;
-import modelo.Reclamo;
-import modelo.RenglonInvalidoException;
-import modelo.Servicio;
-import modelo.ServicioInexistenteException;
-import modelo.VentaRechazadaException;
 
 public class Terminal {
 
