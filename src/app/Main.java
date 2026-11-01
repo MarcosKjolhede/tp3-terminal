@@ -208,7 +208,7 @@ public class Main {
         cargarServiciosDelTP(terminal);
 
         titulo("1. PROCESANDO ventas.txt");
-        terminal.procesarArchivo("ventas.txt");
+        terminal.procesarArchivo("documentos\\ventas.txt");
 
         titulo("2. ARCHIVO INEXISTENTE");
         terminal.procesarArchivo("no_existe.txt");
