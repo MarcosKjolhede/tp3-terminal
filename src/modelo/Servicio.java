@@ -1,16 +1,25 @@
 package modelo;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.TreeMap;;
 
 public class Servicio {
-    private String codigo;
-    private String empresa;
-    private String destino;
-    private String horaDeSalida;
-    private int cantidadDeAsientos;
-    private double precio;
+    private static final int MAX_ESPERA = 5;
 
-    private Map<Integer, Pasaje> pasajeVendido;
-    private ListaDeEspera<Pasajero> listaEspera;
+    private final String codigo;
+    private final String empresa;
+    private final String destino;
+    private final String horaDeSalida;
+    private final int cantidadDeAsientos;
+    private final double precio;
+
+    //Busqueda por asiento y recorrido ya ordenado por asiento (TreeMap)
+    private final Map<Integer, Pasaje> pasajesVendidos = new TreeMap<>();
+    private final ListaDeEspera<Pasajero> espera = new ListaDeEspera<>(MAX_ESPERA);
 
     public Servicio(String codigo, String empresa, String destino, String horaDeSalida,int cantidadDeAsientos, double precio){
         this.codigo = codigo;
@@ -19,9 +28,6 @@ public class Servicio {
         this.horaDeSalida = horaDeSalida;
         this.cantidadDeAsientos = cantidadDeAsientos;
         this.precio = precio;
-        this.pasajeVendido = new HashMap<>();
-        this.listaEspera = new ListaDeEspera<>(5);//Maximo 5
-
     }
     public String getCodigo(){
         return codigo;
@@ -41,34 +47,40 @@ public class Servicio {
     public int getCantidadDeAsientos(){
         return cantidadDeAsientos;
     }
+    public int getCantidadDeAsientosVendidos(){
+        return pasajesVendidos.size();
+    }
     public int getCantidadDeAsientosLibres(){
-        return cantidadDeAsientos - pasajeVendido.size();
+        return cantidadDeAsientos - pasajesVendidos.size();
+    }
+    public double getRecaudacion(){
+        return precio * pasajesVendidos.size();
     }
 
     public boolean estaLleno(){
-        return pasajeVendido.size() >= cantidadDeAsientos;
+        return pasajesVendidos.size() >= cantidadDeAsientos;
     }
 
     public boolean estaOcupado(int numeroAsiento){
-        return pasajeVendido.containsKey(numeroAsiento);
+        return pasajesVendidos.containsKey(numeroAsiento);
     }
     
-    public int obtenerAsientoLibreMasBajo() {
+    public OptionalInt obtenerAsientoLibreMasBajo() {
         for (int i = 1; i <= cantidadDeAsientos; i++) {
-            if (!pasajeVendido.containsKey(i)) {
-                return i;
+            if (!pasajesVendidos.containsKey(i)) {
+                return OptionalInt.of(i);
             }
         }
-        return -1; // Lleno
+        return OptionalInt.empty(); 
     }
 
     public boolean venderAsiento(Pasajero pasajero, int numeroAsiento){
-        if(pasajeVendido.containsKey(numeroAsiento)){
+        if(pasajesVendidos.containsKey(numeroAsiento)){
             System.out.println("Rechazado: El asiento " + numeroAsiento + " ya se encuentra ocupao");
             return false;
         }
         Pasaje nuevoPasaje = new Pasaje(pasajero, this, numeroAsiento);
-        pasajeVendido.put(numeroAsiento, nuevoPasaje);
+        pasajesVendidos.put(numeroAsiento, nuevoPasaje);
         return true;
     }
     
@@ -77,19 +89,19 @@ public class Servicio {
     }
 
     public Pasajero devolverPasaje(int numeroAsiento) {
-        Pasaje devuelto = pasajeVendido.remove(numeroAsiento);
+        Pasaje devuelto = pasajesVendidos.remove(numeroAsiento);
         if (devuelto == null) return null;
 
         if (!listaEspera.estaVacia()) {
             Pasajero enEspera = listaEspera.siguiente();
-            pasajeVendido.put(numeroAsiento, new Pasaje(enEspera, this, numeroAsiento));
+            pasajesVendidos.put(numeroAsiento, new Pasaje(enEspera, this, numeroAsiento));
             return enEspera;
         }
         return null;
     }
 
     public Optional<Pasaje> buscarPasajePorDni(String dni) {
-        for (Pasaje p : pasajeVendido.values()) {
+        for (Pasaje p : pasajesVendidos.values()) {
             if (p.getPasajero().getDni().equals(dni)) {
                 return Optional.of(p);
             }
@@ -101,8 +113,8 @@ public class Servicio {
         System.out.println("Servicio " + codigo + " (" + empresa + " -> " + destino + ")");
         System.out.println(" Pasajes vendidos:");
         for (int i = 1; i <= cantidadDeAsientos; i++) {
-            if (pasajeVendido.containsKey(i)) {
-                System.out.println("  " + pasajeVendido.get(i));
+            if (pasajesVendidos.containsKey(i)) {
+                System.out.println("  " + pasajesVendidos.get(i));
             } else {
                 System.out.println("  Asiento " + i + ": [LIBRE]");
             }

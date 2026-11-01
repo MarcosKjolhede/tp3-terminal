@@ -1,24 +1,36 @@
 package app;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.*;
 import modelo.*;
 
 public class Terminal {
 
-    public static void limpiarConsola() {
-        try {
-            // Para Windows
-            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-            } else {
-                // Para sistemas basados en Unix/Linux/macOS
-                System.out.print("\033[H\033[2J");
-                System.out.flush();
-            }
-        } catch (Exception e) {
-            // Como alternativa si falla lo anterior, imprime múltiples saltos de línea
-            for (int i = 0; i < 50; i++) {
-                System.out.println();
-            }
+    // public static void limpiarConsola() {
+    //     try {
+    //         // Para Windows
+    //         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+    //             new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+    //         } else {
+    //             // Para sistemas basados en Unix/Linux/macOS
+    //             System.out.print("\033[H\033[2J");
+    //             System.out.flush();
+    //         }
+    //     } catch (Exception e) {
+    //         // Como alternativa si falla lo anterior, imprime múltiples saltos de línea
+    //         for (int i = 0; i < 50; i++) {
+    //             System.out.println();
+    //         }
+    //     }
+    // }
+    try (BufferedReader lector = new BufferedReader(new FileReader("ventas.txt"))){
+        String renglon;
+        while((renglon = lector.readLine()) != null){
+
+        } 
+    } catch (FileNotFoundException e){
+
         }
     }
     public boolean venderPasaje(Map<String, Servicio> servicios, String codigoServicio, Pasajero pasajero, String asiento) throws ServicioInexistenteException, VentaRechazadaException {

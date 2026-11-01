@@ -2,8 +2,8 @@ package modelo;
 import java.util.Objects;
 
 public class Pasajero {
-    private String dni;
-    private String nombre;
+    private final String dni;
+    private final String nombre;
 
     public Pasajero(String dni, String nombre){
         this.dni = dni.trim();
@@ -23,8 +23,8 @@ public class Pasajero {
             return true;
         if(o == null || getClass() != o.getClass())
             return false;
-        Pasajero pasajero = (Pasajero) o;
-        return Objects.equals(dni, pasajero.dni);
+        Pasajero otroPasajero = (Pasajero) o;
+        return Objects.equals(dni, otroPasajero.dni);
     }
 
     @Override

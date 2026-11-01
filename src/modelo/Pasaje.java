@@ -1,9 +1,9 @@
 package modelo;
 
 public class Pasaje {
-    private Pasajero pasajero;
-    private Servicio servicio;
-    private int numeroAsiento;
+    private final Pasajero pasajero;
+    private final Servicio servicio;
+    private final int numeroAsiento;
 
     public Pasaje(Pasajero pasajero, Servicio servicio, int numeroAsiento){
         this.pasajero = pasajero;
