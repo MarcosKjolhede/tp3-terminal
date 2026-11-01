@@ -53,7 +53,7 @@ public class Main {
 
         cargarServicio(terminal, new Servicio(codigo, empresa, destino, hora, asientos, precio));
     }
-    
+
     private static void cargarServiciosDelTP(Terminal terminal) {
         titulo("CARGA DE LOS SERVICIOS DEL TP");
         cargarServicio(terminal, new Servicio("NEC-MDP-0700", "Costera", "Mar del Plata", "07:00", 4, 12000));
@@ -303,12 +303,6 @@ public class Main {
 
     public static void main(String[] args) {
         Terminal terminal = new Terminal();
-
-        // Carga de los servicios del dia
-        cargarServicio(terminal, new Servicio("NEC-MDP-0700", "Costera", "Mar del Plata", "07:00", 4, 12000));
-        cargarServicio(terminal, new Servicio("NEC-BA-2200", "Atlántica", "Buenos Aires", "22:00", 6, 38000));
-        cargarServicio(terminal, new Servicio("NEC-TAN-0930", "Costera", "Tandil", "09:30", 3, 9500));
-        cargarServicio(terminal, new Servicio("NEC-TRA-1400", "Atlántica", "Tres Arroyos", "14:00", 5, 21000));
 
         try (Scanner teclado = new Scanner(System.in)) {
             String opcion = "";
