@@ -74,26 +74,27 @@ public class Servicio {
         return OptionalInt.empty(); 
     }
 
-    public boolean venderAsiento(Pasajero pasajero, int numeroAsiento){
-        if(pasajesVendidos.containsKey(numeroAsiento)){
-            System.out.println("Rechazado: El asiento " + numeroAsiento + " ya se encuentra ocupao");
-            return false;
+    //Vende un asiento, si no se puede, saca una VentaRechazadaException
+    public void venderAsiento(Pasajero pasajero, int numeroAsiento){
+        if(numeroAsiento < 1 || numeroAsiento > cantidadDeAsientos){
+            throw new VentaRechazadaException("El asiento " + numeroAsiento + " esta fuera de rango (1 a " + cantidadDeAsientos + ")");
         }
-        Pasaje nuevoPasaje = new Pasaje(pasajero, this, numeroAsiento);
-        pasajesVendidos.put(numeroAsiento, nuevoPasaje);
-        return true;
+        if (estaOcupado(numeroAsiento)){
+            throw new VentaRechazadaException("El asiento " + numeroAsiento + " ya esta vendido.");
+        }
+        pasajesVendidos.put(numeroAsiento, new Pasaje(pasajero, this, numeroAsiento));
     }
     
     public boolean agregarAEnEspera(Pasajero pasajero) {
-        return listaEspera.agregar(pasajero);
+        return espera.agregar(pasajero);
     }
 
     public Pasajero devolverPasaje(int numeroAsiento) {
         Pasaje devuelto = pasajesVendidos.remove(numeroAsiento);
         if (devuelto == null) return null;
 
-        if (!listaEspera.estaVacia()) {
-            Pasajero enEspera = listaEspera.siguiente();
+        if (!espera.estaVacia()) {
+            Pasajero enEspera = espera.siguiente();
             pasajesVendidos.put(numeroAsiento, new Pasaje(enEspera, this, numeroAsiento));
             return enEspera;
         }
@@ -119,8 +120,8 @@ public class Servicio {
                 System.out.println("  Asiento " + i + ": [LIBRE]");
             }
         }
-        System.out.println(" En lista de espera (" + listaEspera.cantidad() + "):");
-        listaEspera.imprimirLista();
+        System.out.println(" En lista de espera (" + espera.cantidad() + "):");
+        espera.imprimirLista();
     }
 }
     
