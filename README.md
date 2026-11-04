@@ -10,13 +10,13 @@ UTN. Tecnicatura universitaria en programación. Programación II. Trabajo prác
 
 ### 1. Compilacion
 Desde la carpeta raiz del repositorio, ejecutar: 
-
+````
 javac -d bin src/modelo/*.java src/app/*.java
-
+````
 ### 2. Ejecucion
-
+````
 java -cp bin app.Main
-
+````
 ## Preguntas
 
 ### 1. Elijan una excepcion propia y expliquen por que la hicieron checked o unchecked.
