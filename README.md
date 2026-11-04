@@ -12,7 +12,7 @@ UTN. Tecnicatura universitaria en programación. Programación II. Trabajo prác
 Desde la carpeta raiz del repositorio, ejecutar: 
 ````
 javac -d bin src/modelo/*.java src/app/*.java
-````
+```````
 ### 2. Ejecucion
 ````
 java -cp bin app.Main
